@@ -1,6 +1,5 @@
 // Global variables for WebRTC connection
-let localConnection;
-let remoteConnection;
+let peerConnection;
 let sendChannel;
 let receiveChannel;
 let fileInput = document.getElementById('fileInput');
@@ -13,6 +12,10 @@ let receiveStatus = document.getElementById('receiveStatus');
 let pinInput = document.getElementById('pinInput');
 let pinDisplay = document.getElementById('pinDisplay');
 let roomId = null;
+let isPolite = false;
+let isMakingOffer = false;
+let ignoreOffer = false;
+let joinedRoom = false;
 
 // Connect to the signaling server (WebSocket server)
 const signalingServer = new WebSocket(`ws://${location.hostname}:8080`);
@@ -44,6 +47,8 @@ signalingServer.onmessage = (message) => {
     handleAnswer(signal.answer);
   } else if (signal.type === "candidate") {
     handleCandidate(signal.candidate);
+  } else if (signal.type === "joined") {
+    joinedRoom = true;
   } else if (signal.type === "error") {
     alert(signal.message || "Signaling server error");
   }
@@ -58,13 +63,45 @@ function sendToSignalingServer(message) {
 }
 
 function createPeerConnection() {
-  const pc = new RTCPeerConnection({
+  if (peerConnection) {
+    return peerConnection;
+  }
+
+  peerConnection = new RTCPeerConnection({
     iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
   });
-  pc.oniceconnectionstatechange = () => {
-    console.log("ICE state:", pc.iceConnectionState);
+
+  peerConnection.onicecandidate = (event) => {
+    if (event.candidate) {
+      sendToSignalingServer({ type: 'candidate', candidate: event.candidate, roomId });
+    }
   };
-  return pc;
+
+  peerConnection.oniceconnectionstatechange = () => {
+    console.log("ICE state:", peerConnection.iceConnectionState);
+  };
+
+  peerConnection.ondatachannel = (event) => {
+    receiveChannel = event.channel;
+    receiveChannel.binaryType = 'arraybuffer';
+    receiveChannel.onmessage = receiveMessage;
+    receiveChannel.onopen = () => console.log("Data channel opened for receiving.");
+    receiveChannel.onclose = () => console.log("Data channel closed for receiving.");
+  };
+
+  peerConnection.onnegotiationneeded = async () => {
+    try {
+      isMakingOffer = true;
+      await peerConnection.setLocalDescription();
+      sendToSignalingServer({ type: 'offer', offer: peerConnection.localDescription, roomId });
+    } catch (error) {
+      handleError(error);
+    } finally {
+      isMakingOffer = false;
+    }
+  };
+
+  return peerConnection;
 }
 
 function generatePin() {
@@ -73,6 +110,7 @@ function generatePin() {
 
 function joinRoom(targetRoomId, role) {
   roomId = targetRoomId;
+  isPolite = role === 'receiver';
   sendToSignalingServer({ type: 'join', roomId, role });
 }
 
@@ -98,54 +136,49 @@ function startReceiving() {
     return;
   }
 
-  // Create a new connection for receiving data
-  localConnection = createPeerConnection();
-
-  localConnection.onicecandidate = (event) => {
-    if (event.candidate) {
-      sendToSignalingServer({ type: 'candidate', candidate: event.candidate });
-    }
-  };
-
-  // Set up data channel for receiving file
-  localConnection.ondatachannel = (event) => {
-    receiveChannel = event.channel;
-    receiveChannel.binaryType = 'arraybuffer';
-    receiveChannel.onmessage = receiveMessage;
-    receiveChannel.onopen = () => console.log("Data channel opened for receiving.");
-    receiveChannel.onclose = () => console.log("Data channel closed for receiving.");
-  };
+  createPeerConnection();
 }
 
 // Function to handle the offer received from the other peer
 function handleOffer(offer) {
-  if (!localConnection) {
-    startReceiving();
+  createPeerConnection();
+
+  const offerDescription = new RTCSessionDescription(offer);
+  const offerCollision = isMakingOffer || peerConnection.signalingState !== "stable";
+  ignoreOffer = !isPolite && offerCollision;
+
+  if (ignoreOffer) {
+    return;
   }
 
-  localConnection.setRemoteDescription(new RTCSessionDescription(offer))
-    .then(() => flushPendingCandidates(localConnection))
-    .then(() => localConnection.createAnswer())
-    .then((answer) => {
-      localConnection.setLocalDescription(answer);
-      sendToSignalingServer({ type: 'answer', answer: answer });
-    }).catch(handleError);
+  peerConnection.setRemoteDescription(offerDescription)
+    .then(() => flushPendingCandidates(peerConnection))
+    .then(() => peerConnection.setLocalDescription())
+    .then(() => {
+      sendToSignalingServer({ type: 'answer', answer: peerConnection.localDescription, roomId });
+    })
+    .catch(handleError);
 }
 
 // Function to handle the answer received from the other peer
 function handleAnswer(answer) {
-  if (remoteConnection) {
-    remoteConnection.setRemoteDescription(new RTCSessionDescription(answer))
-      .then(() => flushPendingCandidates(remoteConnection))
-      .catch(handleError);
+  if (!peerConnection) {
+    return;
   }
+
+  peerConnection.setRemoteDescription(new RTCSessionDescription(answer))
+    .then(() => flushPendingCandidates(peerConnection))
+    .catch(handleError);
 }
 
 // Function to handle the ICE candidate received from the other peer
 function handleCandidate(candidate) {
-  const connection = remoteConnection || localConnection;
-  if (connection && connection.remoteDescription) {
-    connection.addIceCandidate(new RTCIceCandidate(candidate))
+  if (ignoreOffer) {
+    return;
+  }
+
+  if (peerConnection && peerConnection.remoteDescription) {
+    peerConnection.addIceCandidate(new RTCIceCandidate(candidate))
       .catch(handleError);
   } else {
     pendingCandidates.push(candidate);
@@ -167,7 +200,9 @@ function sendFile() {
   }
 
   try {
-    joinRoom(enteredPin, 'sender');
+    if (!joinedRoom || roomId !== enteredPin) {
+      joinRoom(enteredPin, 'sender');
+    }
   } catch (error) {
     handleError(error);
     return;
@@ -177,11 +212,11 @@ function sendFile() {
     sendStatus.textContent = `Preparing to send ${file.name}`;
   }
 
-  // Create the remote peer connection
-  remoteConnection = createPeerConnection();
+  // Create the peer connection
+  createPeerConnection();
 
   // Create a data channel to send the file
-  sendChannel = remoteConnection.createDataChannel("sendDataChannel");
+  sendChannel = peerConnection.createDataChannel("sendDataChannel");
 
   // Open the data channel when it's ready
   sendChannel.onopen = () => {
@@ -199,19 +234,7 @@ function sendFile() {
     }
   };
 
-  // Set up ICE candidates (network info for connecting peers)
-  remoteConnection.onicecandidate = (event) => {
-    if (event.candidate) {
-      sendToSignalingServer({ type: 'candidate', candidate: event.candidate });
-    }
-  };
-
-  // Create an offer to send to the receiving peer
-  remoteConnection.createOffer().then((offer) => {
-    return remoteConnection.setLocalDescription(offer);
-  }).then(() => {
-    sendToSignalingServer({ type: 'offer', offer: remoteConnection.localDescription });
-  }).catch(handleError);
+  // Negotiation handled by onnegotiationneeded.
 }
 
 // Function to send file data through the data channel
