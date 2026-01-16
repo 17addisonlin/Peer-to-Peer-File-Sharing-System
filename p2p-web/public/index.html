@@ -4,17 +4,236 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>P2P File Sharing</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;700&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ink: #0f172a;
+      --muted: #667085;
+      --surface: rgba(255, 255, 255, 0.72);
+      --accent: #ff7a59;
+      --accent-2: #1f9b8d;
+      --border: rgba(15, 23, 42, 0.12);
+      --shadow: 0 22px 40px rgba(15, 23, 42, 0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Space Grotesk", system-ui, sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at top left, #fff4e6 0%, transparent 55%),
+        radial-gradient(circle at 70% 20%, #e8f7ff 0%, transparent 55%),
+        linear-gradient(140deg, #f8f5f2 0%, #f1f4f8 65%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 48px 20px;
+    }
+
+    .shell {
+      width: min(980px, 100%);
+      display: grid;
+      gap: 28px;
+    }
+
+    header {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .kicker {
+      font-size: 14px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    h1 {
+      font-family: "Fraunces", serif;
+      font-size: clamp(2.6rem, 5vw, 3.8rem);
+      margin: 0;
+    }
+
+    .subtitle {
+      max-width: 620px;
+      color: var(--muted);
+      font-size: 1rem;
+      margin: 0;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 20px;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 24px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(16px);
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    h2 {
+      font-family: "Fraunces", serif;
+      font-size: 1.6rem;
+      margin: 0;
+    }
+
+    .row {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .meta {
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+
+    .action {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px 18px;
+      border-radius: 999px;
+      border: none;
+      background: var(--ink);
+      color: #fff;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      box-shadow: 0 14px 24px rgba(15, 23, 42, 0.15);
+    }
+
+    .action.secondary {
+      background: #fff;
+      color: var(--ink);
+      border: 1px solid var(--border);
+      box-shadow: none;
+    }
+
+    .action:active {
+      transform: translateY(1px);
+    }
+
+    .file-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      border-radius: 12px;
+      background: #fff;
+      border: 1px solid var(--border);
+      font-weight: 500;
+      cursor: pointer;
+    }
+
+    .file-name {
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+
+    input[type="file"] {
+      display: none;
+    }
+
+    #receivedFile a {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--accent-2);
+      font-weight: 600;
+      text-decoration: none;
+      border-bottom: 2px solid transparent;
+      transition: border-color 0.2s ease;
+    }
+
+    #receivedFile a:hover {
+      border-color: var(--accent-2);
+    }
+
+    .status {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+
+    .pill {
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(255, 122, 89, 0.12);
+      color: var(--accent);
+      font-weight: 600;
+      font-size: 0.75rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    @media (max-width: 640px) {
+      body {
+        padding: 32px 16px;
+      }
+
+      .card {
+        padding: 20px;
+      }
+
+      .action {
+        width: 100%;
+      }
+    }
+  </style>
 </head>
 <body>
-  <h1>P2P File Sharing</h1>
+  <main class="shell">
+    <header>
+      <span class="kicker">Peer-to-Peer Share</span>
+      <h1>P2P File Sharing</h1>
+      <p class="subtitle">Move files directly between devices without uploads. Start a receiver first, then send a file from another tab or device on the same network.</p>
+    </header>
 
-  <h2>Send File</h2>
-  <input type="file" id="fileInput" />
-  <button onclick="sendFile()">Send File</button>
+    <section class="grid">
+      <div class="card">
+        <h2>Send File</h2>
+        <div class="row">
+          <label class="file-label" for="fileInput">
+            <span class="pill">Choose</span>
+            <span>Select a file to share</span>
+          </label>
+          <span class="file-name" id="selectedFileName">No file selected</span>
+          <input type="file" id="fileInput" />
+        </div>
+        <button class="action" onclick="sendFile()">Send File</button>
+        <div class="status" id="sendStatus">Waiting to send</div>
+      </div>
 
-  <h2>Receive File</h2>
-  <button onclick="startReceiving()">Start Receiving</button>
-  <div id="receivedFile"></div>
+      <div class="card">
+        <h2>Receive File</h2>
+        <p class="meta">Click to start listening for an incoming file. Keep this tab open.</p>
+        <button class="action secondary" onclick="startReceiving()">Start Receiving</button>
+        <div class="status" id="receiveStatus">Not listening yet</div>
+        <div id="receivedFile"></div>
+      </div>
+    </section>
+  </main>
 
   <script src="app.js"></script>
 </body>

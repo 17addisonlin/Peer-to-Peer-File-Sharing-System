@@ -1,38 +1,26 @@
-import http from "http";
-import fs from "fs";
-import path from "path";
-import { fileURLToPath } from "url";
+import WebSocket, { WebSocketServer } from 'ws';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const wss = new WebSocketServer({ port: 8080 });
 
-const PORT = 3000;
+wss.on('connection', (ws) => {
+  console.log('A new client connected.');
 
-const server = http.createServer((req, res) => {
-  // Serve / -> public/index.html
-  const urlPath = req.url === "/" ? "/index.html" : req.url;
+  // When the server receives a message from a client
+  ws.on('message', (message) => {
+    const data = message.toString();
+    console.log('Received:', data);
 
-  const filePath = path.join(__dirname, "public", urlPath);
+    // Broadcast the message to all other clients
+    wss.clients.forEach((client) => {
+      if (client !== ws && client.readyState === WebSocket.OPEN) {
+        client.send(data);
+      }
+    });
+  });
 
-  fs.readFile(filePath, (err, data) => {
-    if (err) {
-      res.writeHead(404, { "Content-Type": "text/plain" });
-      res.end("Not found");
-      return;
-    }
-
-    // Simple content type handling 
-    const ext = path.extname(filePath);
-    const contentType =
-      ext === ".html" ? "text/html" :
-      ext === ".js" ? "text/javascript" :
-      "application/octet-stream";
-
-    res.writeHead(200, { "Content-Type": contentType });
-    res.end(data);
+  ws.on('close', () => {
+    console.log('Client disconnected.');
   });
 });
 
-server.listen(PORT, () => {
-  console.log(`Server running at http://localhost:${PORT}`);
-});
+console.log('Signaling server running at ws://localhost:8080');
