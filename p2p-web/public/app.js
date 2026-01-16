@@ -10,6 +10,9 @@ let pendingCandidates = [];
 let selectedFileName = document.getElementById('selectedFileName');
 let sendStatus = document.getElementById('sendStatus');
 let receiveStatus = document.getElementById('receiveStatus');
+let pinInput = document.getElementById('pinInput');
+let pinDisplay = document.getElementById('pinDisplay');
+let roomId = null;
 
 // Connect to the signaling server (WebSocket server)
 const signalingServer = new WebSocket(`ws://${location.hostname}:8080`);
@@ -41,11 +44,16 @@ signalingServer.onmessage = (message) => {
     handleAnswer(signal.answer);
   } else if (signal.type === "candidate") {
     handleCandidate(signal.candidate);
+  } else if (signal.type === "error") {
+    alert(signal.message || "Signaling server error");
   }
 };
 
 // Function to send signaling messages to the server
 function sendToSignalingServer(message) {
+  if (signalingServer.readyState !== WebSocket.OPEN) {
+    throw new Error("Signaling server is not connected.");
+  }
   signalingServer.send(JSON.stringify(message));
 }
 
@@ -59,11 +67,35 @@ function createPeerConnection() {
   return pc;
 }
 
+function generatePin() {
+  return String(Math.floor(1000 + Math.random() * 9000));
+}
+
+function joinRoom(targetRoomId, role) {
+  roomId = targetRoomId;
+  sendToSignalingServer({ type: 'join', roomId, role });
+}
+
 // Function to start receiving a file (when "Start Receiving" is clicked)
 function startReceiving() {
   console.log("Starting to receive...");
   if (receiveStatus) {
     receiveStatus.textContent = "Listening for an offer...";
+  }
+
+  if (!roomId) {
+    roomId = generatePin();
+  }
+
+  if (pinDisplay) {
+    pinDisplay.textContent = roomId;
+  }
+
+  try {
+    joinRoom(roomId, 'receiver');
+  } catch (error) {
+    handleError(error);
+    return;
   }
 
   // Create a new connection for receiving data
@@ -128,6 +160,19 @@ function sendFile() {
   }
 
   let file = fileInput.files[0];
+  const enteredPin = pinInput ? pinInput.value.trim() : '';
+  if (!/^\d{4}$/.test(enteredPin)) {
+    alert("Enter the 4-digit PIN from the receiving device.");
+    return;
+  }
+
+  try {
+    joinRoom(enteredPin, 'sender');
+  } catch (error) {
+    handleError(error);
+    return;
+  }
+
   if (sendStatus) {
     sendStatus.textContent = `Preparing to send ${file.name}`;
   }
@@ -261,5 +306,11 @@ function handleError(error) {
 if (fileInput && selectedFileName) {
   fileInput.addEventListener('change', () => {
     selectedFileName.textContent = fileInput.files[0]?.name || "No file selected";
+  });
+}
+
+if (pinInput) {
+  pinInput.addEventListener('input', () => {
+    pinInput.value = pinInput.value.replace(/\D/g, '').slice(0, 4);
   });
 }

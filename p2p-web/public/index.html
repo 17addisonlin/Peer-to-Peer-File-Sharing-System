@@ -176,6 +176,24 @@
       color: var(--muted);
     }
 
+    .pin {
+      font-family: "Fraunces", serif;
+      font-size: 1.6rem;
+      letter-spacing: 0.2em;
+      color: var(--ink);
+    }
+
+    .pin-input {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 14px;
+      font-size: 1rem;
+      font-weight: 600;
+      letter-spacing: 0.2em;
+      text-align: center;
+    }
+
     .pill {
       padding: 6px 10px;
       border-radius: 999px;
@@ -214,6 +232,8 @@
       <div class="card">
         <h2>Send File</h2>
         <div class="row">
+          <label class="meta" for="pinInput">Enter receiver PIN</label>
+          <input class="pin-input" id="pinInput" type="text" inputmode="numeric" maxlength="4" placeholder="----" />
           <label class="file-label" for="fileInput">
             <span class="pill">Choose</span>
             <span>Select a file to share</span>
@@ -227,7 +247,11 @@
 
       <div class="card">
         <h2>Receive File</h2>
-        <p class="meta">Click to start listening for an incoming file. Keep this tab open.</p>
+        <p class="meta">Click "Start Receiving" to open terminal for an incoming file. Keep this tab open. You will see a 4-digit PIN, use this PIN to send files on receiver side.</p>
+        <div class="row">
+          <span class="meta">Your PIN</span>
+          <div class="pin" id="pinDisplay">----</div>
+        </div>
         <button class="action secondary" onclick="startReceiving()">Start Receiving</button>
         <div class="status" id="receiveStatus">Not listening yet</div>
         <div id="receivedFile"></div>
