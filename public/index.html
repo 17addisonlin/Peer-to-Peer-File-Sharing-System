@@ -72,20 +72,27 @@
 
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
       gap: 20px;
+      align-items: stretch;
     }
 
     .card {
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: 20px;
-      padding: 24px;
+      padding: 28px;
       box-shadow: var(--shadow);
       backdrop-filter: blur(16px);
       display: flex;
       flex-direction: column;
       gap: 18px;
+      min-height: 360px;
+    }
+
+    .card.wide {
+      grid-column: 1 / -1;
+      min-height: auto;
     }
 
     h2 {
@@ -176,6 +183,19 @@
       color: var(--muted);
     }
 
+    ol.steps {
+      margin: 0;
+      padding-left: 20px;
+      color: var(--muted);
+      display: grid;
+      gap: 10px;
+    }
+
+    .steps strong {
+      color: var(--ink);
+      font-weight: 600;
+    }
+
     .pin {
       font-family: "Fraunces", serif;
       font-size: 1.6rem;
@@ -212,6 +232,7 @@
 
       .card {
         padding: 20px;
+        min-height: auto;
       }
 
       .action {
@@ -247,7 +268,7 @@
 
       <div class="card">
         <h2>Receive File</h2>
-        <p class="meta">Click "Start Receiving" to open terminal for an incoming file. Keep this tab open. You will see a 4-digit PIN, use this PIN to send files on receiver side.</p>
+        <p class="meta">Click “Start Receiving” to listen for an incoming file. Keep this tab open while you share the PIN.</p>
         <div class="row">
           <span class="meta">Your PIN</span>
           <div class="pin" id="pinDisplay">----</div>
@@ -255,6 +276,16 @@
         <button class="action secondary" onclick="startReceiving()">Start Receiving</button>
         <div class="status" id="receiveStatus">Not listening yet</div>
         <div id="receivedFile"></div>
+      </div>
+
+      <div class="card wide">
+        <h2>How to Use</h2>
+        <ol class="steps">
+          <li><strong>Open two tabs or devices.</strong> Use the same Wi‑Fi for best results.</li>
+          <li><strong>Receiver clicks “Start Receiving”.</strong> A 4‑digit PIN appears.</li>
+          <li><strong>Sender enters the PIN.</strong> Choose a file and click “Send File”.</li>
+          <li><strong>Download the file.</strong> The receiver gets a link when the transfer finishes.</li>
+        </ol>
       </div>
     </section>
   </main>
