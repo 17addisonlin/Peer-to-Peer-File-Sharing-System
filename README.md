@@ -10,6 +10,7 @@
 <br />
 <div align="center">
   <a href="https://github.com/17addisonlin/Peer-to-Peer-File-Sharing-System">
+<<<<<<< HEAD
     <img src="images/logo.png" alt="Logo" width="150" height="150">
   </a>
 
