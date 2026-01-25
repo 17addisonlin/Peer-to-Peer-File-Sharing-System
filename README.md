@@ -1,33 +1,38 @@
+# P2P (PeerLink) File Sharing System
+
 <a id="readme-top"></a>
 
-[![Contributors][contributors-shield]][contributors-url]
-[![Forks][forks-shield]][forks-url]
-[![Stargazers][stars-shield]][stars-url]
-[![Issues][issues-shield]][issues-url]
-[![project_license][license-shield]][license-url]
-[![LinkedIn][linkedin-shield]][linkedin-url]
+<p align="center">
+  <br>
+  <img src="images/banner.png"
+  <br>
+</p>
 
-<br />
-<div align="center">
-  <a href="https://github.com/17addisonlin/Peer-to-Peer-File-Sharing-System">
-    <img src="images/logo.png" alt="Logo" width="200" height="200">
-  </a>
+<h3 align="center">Peer-to-Peer File Sharing System</h3>
 
-  <h3 align="center">Peer-to-Peer File Sharing System</h3>
+<p align="center">
+  A browser-based P2P file sharing demo using WebRTC data channels with a WebSocket signaling server and a 4-digit PIN pairing flow.
+  <br>
+  <a href="https://github.com/17addisonlin/Peer-to-Peer-File-Sharing-System"><strong>Explore the docs »</strong></a>
+  <br>
+  English
+</p>
 
-  <p align="center">
-    A browser-based P2P file sharing demo using WebRTC data channels with a WebSocket signaling server and a 4-digit PIN pairing flow.
-    <br />
-    <a href="https://github.com/17addisonlin/Peer-to-Peer-File-Sharing-System"><strong>Explore the docs »</strong></a>
-    <br />
-    <br />
-    <a href="https://github.com/17addisonlin/Peer-to-Peer-File-Sharing-System">View Demo</a>
-    &middot;
-    <a href="https://github.com/17addisonlin/Peer-to-Peer-File-Sharing-System/issues/new?labels=bug&template=bug-report---.md">Report Bug</a>
-    &middot;
-    <a href="https://github.com/17addisonlin/Peer-to-Peer-File-Sharing-System/issues/new?labels=enhancement&template=feature-request---.md">Request Feature</a>
-  </p>
-</div>
+<p align="center">
+  <img src="https://img.shields.io/badge/node-18%2B-339933.svg">
+  <img src="https://img.shields.io/badge/WebRTC-enabled-333333.svg">
+  <img src="https://img.shields.io/badge/WebSocket-supported-010101.svg">
+  <img src="https://img.shields.io/badge/license-MIT-4caf50.svg">
+  <img src="https://img.shields.io/badge/PR-welcome-55EB99.svg">
+</p>
+
+<p align="center">
+  <a href="https://github.com/17addisonlin/Peer-to-Peer-File-Sharing-System">View Demo</a>
+  &nbsp; | &nbsp;
+  <a href="https://github.com/17addisonlin/Peer-to-Peer-File-Sharing-System/issues/new?labels=bug&template=bug-report---.md">Report Bug</a>
+  &nbsp; | &nbsp;
+  <a href="https://github.com/17addisonlin/Peer-to-Peer-File-Sharing-System/issues/new?labels=enhancement&template=feature-request---.md">Request Feature</a>
+</p>
 
 <details>
   <summary>Table of Contents</summary>
