@@ -19,11 +19,12 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/node-18%2B-339933.svg">
-  <img src="https://img.shields.io/badge/WebRTC-enabled-333333.svg">
-  <img src="https://img.shields.io/badge/WebSocket-supported-010101.svg">
-  <img src="https://img.shields.io/badge/license-MIT-4caf50.svg">
-  <img src="https://img.shields.io/badge/PR-welcome-55EB99.svg">
+  <img src="https://img.shields.io/badge/WebRTC-P2P%20DataChannels-333333.svg?logo=webrtc&logoColor=white">
+  <img src="https://img.shields.io/badge/WebSocket-Signaling-010101.svg?logo=socket.io&logoColor=white">
+  <img src="https://img.shields.io/badge/Node-18%2B-339933.svg?logo=node.js&logoColor=white">
+  <img src="https://img.shields.io/badge/JavaScript-ES2020-F7DF1E.svg?logo=javascript&logoColor=000">
+  <img src="https://img.shields.io/badge/PIN-4--digit-5D91D4.svg">
+  <img src="https://img.shields.io/badge/License-MIT-4caf50.svg">
 </p>
 
 <p align="center">
